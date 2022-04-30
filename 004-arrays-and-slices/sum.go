@@ -15,3 +15,11 @@ func SumAll(arr ...[]int) []int {
 	}
 	return result
 }
+
+func SumAllTail(arr ...[]int) int {
+	var result int
+	for _, a := range arr {
+		result += a[len(a)-1]
+	}
+	return result
+}
