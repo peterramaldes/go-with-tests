@@ -1,12 +1,10 @@
 package maps
 
 import (
-	"fmt"
 	"testing"
 )
 
 func TestSearch(t *testing.T) {
-
 	dictionary := Dictionary{"test": "this is just a test"}
 
 	t.Run("known word", func(t *testing.T) {
@@ -51,13 +49,6 @@ func TestAdd(t *testing.T) {
 	})
 }
 
-func assertError(t testing.TB, got error, want error) {
-	t.Helper()
-	if got != want {
-		t.Errorf("got %q want %q", got, want)
-	}
-}
-
 func TestUpdate(t *testing.T) {
 	t.Run("existing word", func(t *testing.T) {
 		word := "test"
@@ -81,6 +72,47 @@ func TestUpdate(t *testing.T) {
 
 		assertText(t, dic, word, text)
 	})
+
+	t.Run("unknown word", func(t *testing.T) {
+		word := "foo"
+		definition := "bar"
+		dic := Dictionary{word: definition}
+		text := "foobar"
+
+		err := dic.Update("baz", text)
+
+		assertError(t, err, ErrUpdateWordDoesNotExists)
+	})
+}
+
+func TestDelete(t *testing.T) {
+	t.Run("delete word", func(t *testing.T) {
+		word := "test"
+		dic := Dictionary{word: "test definition"}
+		dic.Delete(word)
+
+		_, err := dic.Search(word)
+		if err != ErrNotFound {
+			t.Errorf("expected %q to be deleted", word)
+		}
+	})
+
+	t.Run("delete unknown word", func(t *testing.T) {
+		word := "Test"
+		dic := Dictionary{word: "test definition"}
+		err := dic.Delete("foo")
+
+		if err != ErrDeleteWordDoesNotExists {
+			t.Errorf("got %q want %q", err, ErrDeleteWordDoesNotExists)
+		}
+	})
+}
+
+func assertError(t testing.TB, got error, want error) {
+	t.Helper()
+	if got != want {
+		t.Errorf("got %q want %q", got, want)
+	}
 }
 
 func assertText(t testing.TB, dic Dictionary, word string, text string) {
@@ -88,7 +120,7 @@ func assertText(t testing.TB, dic Dictionary, word string, text string) {
 	got, err := dic.Search(word)
 
 	if err != nil {
-		t.Fatal(fmt.Sprintf("should find added word: `err: %s`", err))
+		t.Fatalf("should find added word: `err: %s`", err)
 	}
 
 	if got != text {
